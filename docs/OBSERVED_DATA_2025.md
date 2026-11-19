@@ -2,7 +2,7 @@
 
 ## Purpose and status
 
-The source code supports two verified external inputs: DK2 day-ahead wholesale prices and Copenhagen-region DMI station temperature. **The repository ships with a reproducible synthetic benchmark, not fabricated historical measurements.** To generate the historical scenario, retrieve both official datasets using `python scripts/fetch_real_inputs.py --year 2025`. This command requires internet access. Until it succeeds, no claims should be made about numerical outcomes under historical 2025 data.
+The source code supports two verified external inputs: DK2 day-ahead wholesale prices and Copenhagen-region DMI station temperature. **The reference benchmark is synthetic.** A second, explicitly conditional study was executed with downloaded 2025 observations on 19 November 2026. It used 8,760 DK2 hourly market prices and a 8,760-hour DMI weather series, including 13 flagged interpolations (0.15%). Source files, checksums and results must be committed from the data-collection machine before other readers can reproduce the exact historical run offline. Downloading the sources again requires internet access.
 
 ## Sources
 
@@ -15,7 +15,7 @@ Data endpoint specifications: https://www.energidataservice.dk/guides/api-guides
 
 **Alignment**: every resulting timestamp denotes the *start* of its 1-hour UTC interval. Prices through 30 September 2025 (Danish market time) are hourly; from 1 October local time, prices are quarter-hourly. The transition is 2025-09-30 22:00 UTC. Hourly market prices from the new regime are arithmetic averages of **exactly four** observed quarter-hour prices (not imputed, no dropped quarters). Negative prices are retained. Any incomplete market hour is rejected.
 
-`temp_mean_past1h` is reported at the *end* of its averaging period, so it is shifted back one hour to align with the market. The station record's `observed` property must represent the actual hour-ending timestamp. Weather series must contain the full year's hourly UTC grid. If a very small number of interior observations are missing, the fetcher allows **at most 1% missing weather hours, no uninterrupted gap longer than 3 hours, and no gaps at year boundaries**. Missing hours are filled linearly in UTC and marked `quality=interpolated` in the delivered CSV. Larger gaps trigger an exception; no blind extrapolation or synthetic substitutions. Temperatures outside -50 to 50 °C or jumps above 12 °C in one hour also trigger a manual-review error; these checks are heuristic and do not prove measurement quality. These are *data-cleaning choices*, not measurements.
+`temp_mean_past1h` is reported at the *end* of its averaging period, so it is shifted back one hour to align with the market. The station record's `observed` property must represent the actual hour-ending timestamp. Weather series must contain the full year's hourly UTC grid. If a very small number of observations are missing, the fetcher allows **at most 1% missing weather hours and no uninterrupted gap longer than 3 hours**. The importer requests extra actual station observations immediately before and after the calendar year to handle year-boundary gaps with **two-sided interpolation only**. Missing hours are filled linearly in UTC and labelled `quality=interpolated` in the output CSV. An unbracketed boundary, a longer gap, or excessive missing data triggers an exception; no extrapolation or synthetic substitution. Temperatures outside -50 to 50 °C or jumps above 12 °C in one hour also trigger a manual-review error; these checks are heuristic and do not prove measurement quality. These are *data-cleaning choices*, not measurements.
 
 Data are downloaded *before* a simulation can run. Both csv files contain exactly 8,760 rows for 2025; a leap year would have 8,784. Provider URLs, retrieval timestamp, a count of interpolated temperatures, and SHA-256 fingerprints are stored in `data/observed/observed_2025.metadata.json`. Only after validation does the script write the data CSVs. With incomplete inputs it fails and tells the user why.
 
@@ -39,7 +39,20 @@ python run.py --config config.json --out results
 PYTHONPATH=src python -m pytest -q
 ```
 
-When publishing, check `data/observed/*.csv` and the metadata file into the repo **only after actually downloading and reviewing them**. The two CSVs are small; the documented CC BY 4.0 attribution must be preserved. Never commit API credentials or large raw API dumps.
+For public reproducibility, commit the downloaded `data/observed/*.csv` and the metadata file **only after reviewing the files, quality flags and the recorded provider attribution**. The two CSVs are small; the documented CC BY 4.0 attribution must be preserved. Never commit API credentials or large raw API dumps.
+
+## Executed 2025 run (observed boundary conditions; other assumptions unchanged)
+
+| Result | Synthetic benchmark | Observed 2025 prices and DMI temperatures |
+|---|---:|---:|
+| Modelled annual heat demand | 7,301.522 MWh | 6,466.512 MWh |
+| Useful heat delivered | 5,047.711 MWh | 4,860.612 MWh |
+| Mean running COP | 4.005 | 4.064 |
+| Modelled demand coverage | 69.1% | 75.2% |
+| Electricity cost | EUR 125,570.60/year | EUR 114,568.24/year |
+| NPV under assumed gas-boiler counterfactual | EUR 1,318,960 | EUR 1,300,896 |
+
+The 2025 run used 8,747 directly observed DMI hours and 13 explicitly interpolated hours. The prices cover 8,760 hourly UTC intervals, with quarter-hour aggregation after the market transition. Source temperatures, IT load and district heating demand are **not observed**. The NPV represents an assumed system-wide savings calculation, not the revenues of a heat-sale investor. No manufacturer performance map or bank financing model has been validated.
 
 ## What actually becomes data-driven?
 
