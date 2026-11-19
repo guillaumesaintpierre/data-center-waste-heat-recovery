@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.DS_Store
+*.egg-info/
+# Local data downloads / intermediate provider payloads
+/data/raw/
+*.part
+# Scratch or editor files
+.idea/
+.vscode/

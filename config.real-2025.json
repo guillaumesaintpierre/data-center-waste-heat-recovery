@@ -1,0 +1,65 @@
+{
+  "project_name": "2025 Copenhagen boundary conditions: observed DK2 prices and DMI weather",
+  "time": {
+    "year": 2025,
+    "step_hours": 1.0,
+    "seed": 20261117
+  },
+  "source": {
+    "installed_it_mw": 1.0,
+    "mean_it_load_fraction": 0.83,
+    "recoverable_fraction_of_it_heat": 0.78,
+    "source_supply_c": 33.0,
+    "source_ambient_sensitivity_c_per_c": 0.06,
+    "evaporator_approach_k": 4.0,
+    "pue_reference": 1.25
+  },
+  "heat_pump": {
+    "rated_heat_output_mw": 1.15,
+    "second_law_efficiency": 0.5,
+    "condenser_approach_k": 3.0,
+    "min_cop": 1.2,
+    "max_cop": 9.0,
+    "circulation_electricity_fraction_of_heat_output": 0.018,
+    "delivery_efficiency": 0.97,
+    "minimum_load_fraction": 0.0
+  },
+  "network": {
+    "design_supply_c": 68.0,
+    "supply_reset_c_per_c": 0.4,
+    "min_supply_c": 58.0,
+    "max_supply_c": 75.0,
+    "base_demand_mw": 0.16,
+    "heating_demand_per_degree_mw": 0.09,
+    "heating_balance_temperature_c": 16.0,
+    "max_demand_mw": 2.2
+  },
+  "economics": {
+    "gas_price_eur_per_mwh_fuel": 65.0,
+    "boiler_efficiency": 0.9,
+    "electricity_price_mean_eur_per_mwh": 87.0,
+    "electricity_price_variation_eur_per_mwh": 27.0,
+    "variable_operating_cost_eur_per_mwh_heat": 5.0,
+    "fixed_operating_cost_eur_per_year": 23000.0,
+    "installed_capex_eur": 820000.0,
+    "real_discount_rate": 0.06,
+    "evaluation_years": 20,
+    "year_12_overhaul_fraction_of_capex": 0.12,
+    "electricity_emission_factor_kg_per_mwh": 140.0,
+    "gas_emission_factor_kg_per_mwh_fuel": 202.0
+  },
+  "profiles": {
+    "source": "observed_DK2_market_and_DMI_weather__other_inputs_assumed",
+    "observed_electricity_csv": "data/observed/dk2_prices_2025.csv",
+    "observed_weather_csv": "data/observed/dmi_temperature_2025.csv"
+  },
+  "dispatch": {
+    "mode": "economic"
+  },
+  "sizing": {
+    "fixed_capex_eur": 300000,
+    "range_min_mw": 0.4,
+    "range_max_mw": 2.0,
+    "steps": 33
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "scenario": "Data-centre waste heat for district heating",
+  "provenance": {
+    "price_data": "synthetic",
+    "ambient_data": "synthetic",
+    "load_and_heat_demand": "hypothetical parametric models",
+    "weather_imputed_hours": 0
+  },
+  "illustrative_size_optimum": {
+    "rated_heat_mw": 0.9,
+    "npv_eur": 1431190.68,
+    "warning": "Grid search under hypothetical linear CAPEX; not an equipment recommendation"
+  },
+  "metrics": {
+    "hours": 8760,
+    "heat_demand_mwh": 7301.521740107253,
+    "heat_delivered_mwh": 5047.711204204434,
+    "source_heat_used_mwh": 3904.624318264948,
+    "compressor_electricity_mwh": 1299.2016654509634,
+    "pumping_electricity_mwh": 93.6688677068864,
+    "mean_running_cop": 4.005402796269986,
+    "heat_demand_coverage": 0.6913231767122406,
+    "capacity_factor_rated_heat_output": 0.516560053972197,
+    "baseline_gas_heat_cost_avoided_eur": 364556.9203036535,
+    "electricity_cost_eur": 125570.59606115946,
+    "variable_om_eur": 25238.556021022167,
+    "fixed_om_eur": 23000.0,
+    "annual_incremental_cashflow_eur": 190747.7682214719,
+    "capital_expenditure_eur": 820000.0,
+    "simple_payback_years": 4.298870742476635,
+    "npv_eur": 1318960.08874145,
+    "break_even_heat_value_eur_per_mwh": 49.44101577933183,
+    "conditional_operational_emissions_avoided_tonnes": 937.928862301563,
+    "data_provenance": "electricity: synthetic; ambient: synthetic; district heat demand and technology parameters: assumed",
+    "counterfactual": "district heat supplied by natural gas boiler; no heat-recovery infrastructure",
+    "note": "Illustrative feasibility study, not a bankable feasibility assessment."
+  },
+  "limitations": [
+    "IT load, thermal demand coefficients, capture fraction and plant parameters are assumptions; weather and market prices are observed ONLY when supplied",
+    "The COP relation is a parametric approximation, not a measured heat-pump curve",
+    "PUE is background electricity only and is not counted as recovered heat",
+    "Counterfactual assumes marginal heat supplied by a gas boiler",
+    "Emissions are operational and conditional on assumed grid/boiler factors",
+    "No thermal storage, hydraulic network model, redundancy or heat-exchanger sizing",
+    "Real-capex, tax and tariff quotations are not available"
+  ]
+}
