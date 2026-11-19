@@ -131,3 +131,50 @@ def test_dmi_weather_spike_requires_review():
     items=[feature((t+pd.Timedelta(hours=1)).isoformat(),18. if i==100 else 0.) for i,t in enumerate(ix)]
     with pytest.raises(ValueError,match='12 C'):
         parse_dmi_observations(items,2025)
+
+def test_dmi_week_windows_cover_exactly_8760_observation_hours():
+    from urllib.parse import urlsplit, parse_qs
+    from scripts.fetch_real_inputs import dmi_urls
+    urls = dmi_urls(2025, '06180')
+    assert len(urls) == 53
+    observations = []
+    for name, url in urls:
+        qs = parse_qs(urlsplit(url).query)
+        assert qs['stationId'] == ['06180']
+        assert 'sortorder' not in qs
+        assert qs['parameterId'] == ['temp_mean_past1h']
+        start, end = qs['datetime'][0].split('/')
+        observations.extend(pd.date_range(start, end, freq='h', tz='UTC'))
+    expected = pd.date_range('2025-01-01T01:00:00Z',
+                             '2026-01-01T00:00:00Z', freq='h')
+    assert len(observations) == 8760
+    assert pd.DatetimeIndex(observations).equals(expected)
+
+
+def test_dmi_weekly_mocked_fetch_and_coverage():
+    from urllib.parse import urlsplit, parse_qs
+    from scripts.fetch_real_inputs import dmi_records_for_year
+    def fake_getter(url):
+        qs = parse_qs(urlsplit(url).query)
+        start, end = qs['datetime'][0].split('/')
+        return {'features': [feature(t.isoformat(), 10.)
+                             for t in pd.date_range(start, end, freq='h', tz='UTC')],
+                'links': []}
+    records, origins = dmi_records_for_year(2025, getter=fake_getter)
+    assert len(records) == 8760
+    assert len(origins) == 53
+    frame, meta = parse_dmi_observations(records, 2025)
+    assert len(frame) == 8760
+    assert meta['interpolated_hours'] == 0
+
+
+def test_dmi_http_error_reports_provider_message(monkeypatch):
+    import io
+    from urllib.error import HTTPError
+    import scripts.fetch_real_inputs as module
+    def fake_urlopen(request, timeout=100):
+        raise HTTPError('https://example.org/api', 400, 'Bad Request', {},
+                        io.BytesIO(b'{"message":"invalid query parameter"}'))
+    monkeypatch.setattr(module, 'urlopen', fake_urlopen)
+    with pytest.raises(RuntimeError, match='invalid query parameter'):
+        module.load_json('https://example.org/api')
