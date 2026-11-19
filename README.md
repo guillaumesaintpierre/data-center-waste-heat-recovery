@@ -4,7 +4,7 @@
 
 I developed a reproducible hourly model to study that question, combining heat-pump thermodynamics with heat-demand matching and a discounted cash-flow assessment. The model accounts for compressor electricity, network delivery losses, available heat at the source, heat-pump capacity, and the hourly decision to recover heat or use the reference boiler.
 
-> **Scope and honesty:** This is a *screening model*, not a real plant feasibility study. All IT load, weather, district demand, heat-pump efficiency and monetary values in the bundled reference scenario are **explicit assumptions**, not measurements, quotations or validated operational data. The synthetic profiles are deterministic so every plot and number can be reproduced. An additional **historical boundary-condition study** can retrieve DK2 wholesale prices from Energinet and DMI air-temperature observations for 2025. That historical study is **not included as measured output until the download command has succeeded**. The existing published figures and report remain an all-assumption baseline.
+> **Scope:** This is a *screening model*, not a plant feasibility study. The bundled reference scenario uses synthetic prices and temperatures. A separate 2025 run uses observed Danish DK2 wholesale electricity prices and DMI Kastrup air temperatures (with 13 explicitly interpolated weather hours), while IT load, heating-demand coefficients, heat-pump performance, capital costs, and gas-boiler counterfactual remain modelling assumptions. The published technical report and eight reference figures describe the synthetic benchmark; they should not be mistaken for historical-data results.
 
 ## Why this question matters
 
@@ -68,18 +68,31 @@ Reference output: **5.05 GWh/year** useful heat delivered, mean *running* COP **
 
 ![Illustrative sizing trade-off](figures/08_capacity_sizing.png)
 
-### Historical price + weather boundary-condition study (optional; external data)
+### Historical price and weather study: Denmark, 2025
 
-A second configuration, `config.real-2025.json`, supports official historical 2025 inputs. The simulator uses **observed** day-ahead electricity prices in DK2 and measured DMI hourly air temperature, while the IT load, source temperatures, heat demand relationships, equipment and economic inputs remain **unvalidated assumptions**. The 2025 market changes from hourly to quarter-hour settlement at local midnight on October 1; the importer aggregates quarters after explicit UTC alignment. Missing market intervals are rejected, and any small interpolated weather gaps are flagged in the output.
+A second configuration, `config.real-2025.json`, uses downloaded 2025 Danish input data: **Energinet DK2 day-ahead wholesale electricity prices** (hourly prices through the 1 October 2025 market transition and four quarter-hour prices averaged thereafter), and **DMI Kastrup station hourly mean air temperature**. Weather observations are mapped to the hour they describe, rather than the hour when the observation was reported. Among 8,760 hourly weather values, **13 hours (0.15%) were filled by explicitly flagged, short-gap linear interpolation using measured neighbours**. These are not 8,760 independently measured temperature values.
+
+| Metric | Synthetic reference | Observed-price/weather boundary conditions |
+|---|---:|---:|
+| Annual modelled district heating demand | 7,302 MWh | 6,467 MWh |
+| Useful heat delivered | 5,048 MWh | **4,861 MWh** |
+| Mean running COP | 4.005 | **4.064** |
+| Share of modelled heat demand covered | 69.1% | **75.2%** |
+| Additional electricity cost | EUR 125,571/yr | **EUR 114,568/yr** |
+| 20-year NPV of assumed boiler-displacement savings | EUR 1.319m | **EUR 1.301m** |
+
+The historical-boundary run was executed on a contributor's computer after retrieving both datasets. **No measured district-heat demand, data-centre heat source, or equipment performance was supplied.** Thus the increased heat-demand coverage reflects a changed weather-driven *demand estimate*, not a measurement that the real network is better served. The positive NPV is an assumed gas-boiler cost-avoidance calculation, **not** an investor's heat-sale revenue projection or a bankable valuation. DMI's metObs readings are raw station observations and not a quality-controlled climate record.
+
+The historical inputs and generated outputs must be checked into the repository to make this specific run reproducible without downloading them again. The following commands regenerate it after the inputs are available:
 
 ```bash
-python scripts/fetch_real_inputs.py --year 2025  # actual provider download, internet needed
+python scripts/fetch_real_inputs.py --year 2025
 python run.py --config config.real-2025.json --out results/real-2025
 python scripts/plot_observed_inputs.py --year 2025
 python scripts/compare_runs.py --reference results/summary.json --observed results/real-2025/summary.json
 ```
 
-**The archive does not contain any downloaded 2025 observations yet**: this execution environment cannot reach the provider APIs. The first command must run on a computer with Internet access; a missing CSV causes a hard error. See [observed-data methodology](docs/OBSERVED_DATA_2025.md).
+See the [observed-data methodology](docs/OBSERVED_DATA_2025.md) and the machine-generated input provenance / SHA-256 metadata in `data/observed/observed_2025.metadata.json`. Do not substitute synthetic prices or weather if a provider download fails.
 
 An additional **discrete capacity-sizing screen** suggests that around **0.90 MW** would be more economical than 1.15 MW *in the reference scenario under a hypothetical linear CAPEX model*. This is not an equipment recommendation; the result would need real quotations and operating constraints.
 
@@ -95,7 +108,7 @@ The central lesson is that **heat availability, temperature lift, seasonal deman
 
 ## Next validation step
 
-The single most useful next step would be to obtain **measured hourly district heating demand and source temperatures** (with permission), plus an equipment COP map and commercial project costs. Public Danish day-ahead prices and DMI observed temperatures can be incorporated via the supplied importer; details in [docs/OBSERVED_DATA_2025.md](docs/OBSERVED_DATA_2025.md). Until then, the results are a transparent *conditional screening calculation*.
+The single most useful next step is to obtain **measured hourly district heating demand and source temperatures** (with permission), plus an equipment COP map and actual investment/contract costs. Weather and market-price observations have now been used in a 2025 sensitivity run, but do not validate any unobserved physical or commercial quantities. See [docs/OBSERVED_DATA_2025.md](docs/OBSERVED_DATA_2025.md).
 
 ## Literature and data
 
