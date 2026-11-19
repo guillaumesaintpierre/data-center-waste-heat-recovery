@@ -11,9 +11,9 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import urlencode, parse_qs, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 import sys
 
 import numpy as np
@@ -27,12 +27,31 @@ CUTOVER=pd.Timestamp('2025-09-30T22:00:00Z')
 
 
 def load_json(url, *, timeout=100):
-    req=Request(url,headers={'User-Agent':'EPFL-DTU-student-waste-heat-study/1.0 (noncommercial academic project)', 'Accept':'application/json'})
+    """Fetch JSON and include DMI's diagnostic message for invalid requests."""
+    req = Request(url, headers={
+        'User-Agent': 'EPFL-DTU-student-waste-heat-study/1.0 (academic project)',
+        'Accept': 'application/json',
+    })
     try:
-        with urlopen(req,timeout=timeout) as response:
+        with urlopen(req, timeout=timeout) as response:
             return json.loads(response.read())
-    except (URLError,TimeoutError,json.JSONDecodeError) as exc:
-        raise RuntimeError(f"Could not retrieve provider data from {url}: {exc}") from exc
+    except HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')[:1600].strip()
+        raise RuntimeError(
+            f'Data provider returned HTTP {exc.code} for {url}\n'
+            f'Provider response: {body or "(empty response)"}'
+        ) from exc
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f'Could not retrieve provider data from {url}: {exc}') from exc
+
+
+def with_offset(url, offset):
+    """Update pagination offset without changing the other query parameters."""
+    parts = urlsplit(url)
+    query = parse_qs(parts.query, keep_blank_values=True)
+    query['offset'] = [str(offset)]
+    return urlunsplit((parts.scheme, parts.netloc, parts.path,
+                       urlencode(query, doseq=True, safe=':/,'), parts.fragment))
 
 
 def parse_eds_records(rows, expected, field_t, field_p):
@@ -106,38 +125,75 @@ def fetch_prices(year, getter=load_json):
     return frame,info
 
 
-def dmi_urls(year,station):
-    # DMI parameter temp_mean_past1h is the average over the hour ending
-    # at timestamp 'observed', so request hour 01:00 Jan 1 -> 00:00 Jan 1.
-    out=[]
-    for month in range(1,13):
-        a=pd.Timestamp(year=year,month=month,day=1,tz='UTC')
-        b=a+pd.offsets.MonthBegin(1)
-        start=a+pd.Timedelta(hours=1)
-        end=b+pd.Timedelta(hours=1)
-        query={'stationId':station,'parameterId':'temp_mean_past1h',
-               'datetime':f'{start:%Y-%m-%dT%H:%M:%SZ}/{end:%Y-%m-%dT%H:%M:%SZ}',
-               'limit':1000,'offset':0,'sortorder':'observed,ASC'}
-        out.append((str(month).zfill(2),BASE_D+'?'+urlencode(query)))
+def dmi_urls(year, station, window_days=7):
+    """Request non-overlapping weekly windows of hourly DMI observations.
+
+    An observation at 01:00 describes the preceding 00:00--01:00 interval.
+    For study hours [a,b), request timestamps [a+1h,b], inclusive.
+    """
+    if not 1 <= window_days <= 31:
+        raise ValueError('DMI window_days must be between 1 and 31')
+    first = pd.Timestamp(year=year, month=1, day=1, tz='UTC')
+    last = pd.Timestamp(year=year + 1, month=1, day=1, tz='UTC')
+    out = []
+    cursor = first
+    while cursor < last:
+        stop = min(cursor + pd.Timedelta(days=window_days), last)
+        start_observed = cursor + pd.Timedelta('1h')
+        end_observed = stop
+        query = {
+            'stationId': station,
+            'parameterId': 'temp_mean_past1h',
+            'datetime': (f'{start_observed:%Y-%m-%dT%H:%M:%SZ}/'
+                         f'{end_observed:%Y-%m-%dT%H:%M:%SZ}'),
+            'limit': 1000,
+            'offset': 0,
+        }
+        # Keep the standard RFC3339 interval slash unescaped. Sort offline.
+        url = BASE_D + '?' + urlencode(query, safe=':/,')
+        out.append((f'{cursor:%Y-%m-%d}', url))
+        cursor = stop
     return out
 
 
-def dmi_records_for_year(year,station='06180',getter=load_json):
-    features=[]; origins=[]
-    for month,url in dmi_urls(year,station):
-        offset=0; pages=0
+def dmi_records_for_year(year, station='06180', getter=load_json):
+    features = []
+    origins = []
+    for window, url in dmi_urls(year, station):
+        offset = 0
+        pages = 0
         while True:
-            actual=url.replace('offset=0',f'offset={offset}')
-            data=getter(actual)
-            batch=data.get('features',[])
-            if not isinstance(batch,list):raise ValueError('DMI features must be list')
+            actual = with_offset(url, offset)
+            try:
+                data = getter(actual)
+            except RuntimeError as exc:
+                raise RuntimeError(
+                    f'DMI request failed in window beginning {window} '
+                    f'for station {station}.\n{exc}'
+                ) from exc
+            batch = data.get('features', [])
+            if not isinstance(batch, list):
+                raise ValueError('DMI features must be a list')
             features.extend(batch)
-            pages+=1
-            if len(batch)<1000:break
-            offset+=len(batch)
-            if pages>=30:raise ValueError('Unexpected DMI pagination beyond 30 pages/month')
-        origins.append({'month':month,'query_url':url,'pages':pages})
-    return features,origins
+            pages += 1
+            next_link = next((link.get('href') for link in data.get('links', [])
+                              if link.get('rel') == 'next'), None)
+            if next_link:
+                if pages >= 30:
+                    raise ValueError('DMI unexpectedly returned >30 pages in one window')
+                parsed_next = parse_qs(urlsplit(next_link).query)
+                next_offset = int(parsed_next.get('offset', [offset + len(batch)])[0])
+                if next_offset <= offset:
+                    raise ValueError('DMI pagination did not advance')
+                offset = next_offset
+            elif len(batch) == 1000:
+                if pages >= 30:
+                    raise ValueError('DMI unexpectedly returned >30 pages in one window')
+                offset += len(batch)
+            else:
+                break
+        origins.append({'window_start': window, 'query_url': url, 'pages': pages})
+    return features, origins
 
 
 def parse_dmi_observations(features,year,station='06180',max_gap=3,max_missing_fraction=.01):
