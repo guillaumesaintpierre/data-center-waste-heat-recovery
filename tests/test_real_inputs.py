@@ -145,9 +145,9 @@ def test_dmi_week_windows_cover_exactly_8760_observation_hours():
         assert qs['parameterId'] == ['temp_mean_past1h']
         start, end = qs['datetime'][0].split('/')
         observations.extend(pd.date_range(start, end, freq='h', tz='UTC'))
-    expected = pd.date_range('2025-01-01T01:00:00Z',
-                             '2026-01-01T00:00:00Z', freq='h')
-    assert len(observations) == 8760
+    expected = pd.date_range('2024-12-31T13:00:00Z',
+                             '2026-01-01T12:00:00Z', freq='h')
+    assert len(observations) == 8784
     assert pd.DatetimeIndex(observations).equals(expected)
 
 
@@ -161,7 +161,7 @@ def test_dmi_weekly_mocked_fetch_and_coverage():
                              for t in pd.date_range(start, end, freq='h', tz='UTC')],
                 'links': []}
     records, origins = dmi_records_for_year(2025, getter=fake_getter)
-    assert len(records) == 8760
+    assert len(records) == 8784
     assert len(origins) == 53
     frame, meta = parse_dmi_observations(records, 2025)
     assert len(frame) == 8760
@@ -178,3 +178,41 @@ def test_dmi_http_error_reports_provider_message(monkeypatch):
     monkeypatch.setattr(module, 'urlopen', fake_urlopen)
     with pytest.raises(RuntimeError, match='invalid query parameter'):
         module.load_json('https://example.org/api')
+
+
+def test_year_boundary_gap_interpolated_only_with_measured_neighbours():
+    ix = pd.date_range('2025-01-01', '2026-01-01', freq='h',
+                       inclusive='left', tz='UTC')
+    # Both endpoints of 2025 are missing; observations from neighbouring years
+    # provide genuine two-sided measurements around those small gaps.
+    hourly = list(ix[1:-1]) + [pd.Timestamp('2024-12-31T23:00:00Z'),
+                                pd.Timestamp('2026-01-01T00:00:00Z')]
+    items = [feature((t + pd.Timedelta(hours=1)).isoformat(),
+                     float((t - ix[0]).total_seconds()/3600.0 / 1000.0))
+             for t in hourly]
+    out, qa = parse_dmi_observations(items, 2025)
+    assert len(out) == 8760
+    assert out.iloc[0]['quality'] == 'interpolated'
+    assert out.iloc[-1]['quality'] == 'interpolated'
+    assert qa['interpolated_hours'] == 2
+    assert out.iloc[0]['ambient_c'] == pytest.approx(0.0)
+    assert out.iloc[-1]['ambient_c'] == pytest.approx(8.759)
+
+
+def test_unbracketed_year_boundary_gap_rejected():
+    ix = pd.date_range('2025-01-01', '2026-01-01', freq='h',
+                       inclusive='left', tz='UTC')
+    items = [feature((t+pd.Timedelta(hours=1)).isoformat(), 5.0)
+             for t in ix[1:]]
+    with pytest.raises(ValueError, match='Unbracketed DMI gap'):
+        parse_dmi_observations(items, 2025)
+
+
+def test_long_gap_across_year_boundary_rejected():
+    ix = pd.date_range('2025-01-01', '2026-01-01', freq='h',
+                       inclusive='left', tz='UTC')
+    hourly = [pd.Timestamp('2024-12-31T21:00:00Z')] + list(ix[2:])
+    items = [feature((t+pd.Timedelta(hours=1)).isoformat(), 5.0)
+             for t in hourly]
+    with pytest.raises(ValueError, match='gap longer'):
+        parse_dmi_observations(items, 2025, max_gap=3)
