@@ -125,7 +125,7 @@ def fetch_prices(year, getter=load_json):
     return frame,info
 
 
-def dmi_urls(year, station, window_days=7):
+def dmi_urls(year, station, window_days=7, boundary_hours=12):
     """Request non-overlapping weekly windows of hourly DMI observations.
 
     An observation at 01:00 describes the preceding 00:00--01:00 interval.
@@ -133,14 +133,22 @@ def dmi_urls(year, station, window_days=7):
     """
     if not 1 <= window_days <= 31:
         raise ValueError('DMI window_days must be between 1 and 31')
+    if not 1 <= boundary_hours <= 48:
+        raise ValueError('DMI boundary_hours must be between 1 and 48')
     first = pd.Timestamp(year=year, month=1, day=1, tz='UTC')
     last = pd.Timestamp(year=year + 1, month=1, day=1, tz='UTC')
     out = []
     cursor = first
     while cursor < last:
         stop = min(cursor + pd.Timedelta(days=window_days), last)
+        # Request real observations outside the calendar year to bracket
+        # year-edge gaps, rather than inventing the missing temperatures.
         start_observed = cursor + pd.Timedelta('1h')
         end_observed = stop
+        if cursor == first:
+            start_observed -= pd.Timedelta(hours=boundary_hours)
+        if stop == last:
+            end_observed += pd.Timedelta(hours=boundary_hours)
         query = {
             'stationId': station,
             'parameterId': 'temp_mean_past1h',
@@ -216,20 +224,41 @@ def parse_dmi_observations(features,year,station='06180',max_gap=3,max_missing_f
             raise ValueError('Conflicting DMI temperatures at the same timestamp')
         s=s.loc[~s.index.duplicated(keep='first')]
     expected=pd.date_range(f'{year}-01-01',f'{year+1}-01-01',freq='h',inclusive='left',tz='UTC')
-    s=s.reindex(expected)
-    missing=s.isna()
-    nmissing=int(missing.sum())
-    if nmissing/len(s)>max_missing_fraction:
-        raise ValueError(f'DMI weather gaps exceed {max_missing_fraction:.1%}: {nmissing}/{len(s)} hours')
+    if ((s.index.minute != 0) | (s.index.second != 0)).any():
+        raise ValueError('DMI hourly observations are not aligned to exact hours')
+    # An extended timeline preserves measured points outside the study year.
+    # This lets interpolation at Jan 1 / Dec 31 remain two-sided and auditable.
+    complete_index = pd.date_range(min(s.index.min(), expected[0]),
+                                   max(s.index.max(), expected[-1]), freq='h', tz='UTC')
+    full = s.reindex(complete_index)
+    missing = full.reindex(expected).isna()
+    nmissing = int(missing.sum())
+    if nmissing / len(expected) > max_missing_fraction:
+        example = expected[missing.to_numpy()][:5].strftime('%Y-%m-%d %H:%M UTC').tolist()
+        raise ValueError(f'DMI weather gaps exceed {max_missing_fraction:.1%}: '
+                         f'{nmissing}/{len(expected)} hours; first missing={example}')
     if nmissing:
-        groups=(missing!=missing.shift(fill_value=False)).cumsum()
-        runlens=missing.groupby(groups).sum()
-        if (runlens>max_gap).any():
-            raise ValueError(f'DMI has weather gap longer than {max_gap} h')
-        if missing.iloc[0] or missing.iloc[-1]:
-            raise ValueError('Missing DMI observation at a year boundary; no extrapolation')
-        s=s.interpolate(method='time',limit=max_gap,limit_area='inside')
-        if s.isna().any():raise ValueError('Unable to interpolate gaps within user-approved limit')
+        gaps = full.isna()
+        groups = (gaps != gaps.shift(fill_value=False)).cumsum()
+        # Only reject runs that actually intersect the requested study year.
+        for _, segment in gaps.groupby(groups):
+            if not segment.iloc[0]:
+                continue
+            affected = segment.index.intersection(expected[missing.to_numpy()])
+            if len(affected) == 0:
+                continue
+            if len(segment) > max_gap:
+                raise ValueError(f'DMI has weather gap longer than {max_gap} h '
+                                 f'at {affected[0]} (gap={len(segment)} hours)')
+        fill = full.interpolate(method='time', limit=max_gap, limit_area='inside')
+        if fill.reindex(expected).isna().any():
+            bad = expected[fill.reindex(expected).isna().to_numpy()]
+            raise ValueError('Unbracketed DMI gap at year boundary: '
+                             f'{bad[0]}; observations before AND after are required; '
+                             'no extrapolation is permitted')
+        s = fill.reindex(expected)
+    else:
+        s = full.reindex(expected)
     if np.nanmax(np.abs(s.diff().to_numpy(dtype=float)))>12.0:
         raise ValueError('DMI temperature changes more than 12 C in an hour; inspect station quality manually')
     result=pd.DataFrame({'time_utc':expected.strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -237,7 +266,7 @@ def parse_dmi_observations(features,year,station='06180',max_gap=3,max_missing_f
                          'quality':np.where(missing.to_numpy(),'interpolated','observed')})
     return result, {'raw_records':len(features),'duplicate_identical_timestamp_records':duplicates,
                     'observed_hours':len(result)-nmissing,'interpolated_hours':nmissing,
-                    'interpolation_method':f'linear in UTC, gap <= {max_gap} hours, no boundary extrapolation',
+                    'interpolation_method':f'linear in UTC with measured bracketing, gap <= {max_gap} hours; no extrapolation',
                     'hourly_jump_threshold_c':12.0, 'raw_metobs_quality_controlled':False}
 
 
