@@ -1,0 +1,318 @@
+{
+  "data_source": "Historical observations, not synthetic",
+  "retrieved_utc": "2026-11-19T10:59:45.203477+00:00",
+  "year": 2025,
+  "electricity_zone": "DK2",
+  "weather_station": "06180",
+  "electricity_units": "EUR/MWh; wholesale spot price; excludes grid fees, levies and taxes",
+  "weather_units": "degrees Celsius; DMI preceding-hour mean at observed timestamp",
+  "time_alignment": "Both series aligned to interval START in UTC",
+  "provenance": {
+    "energy": "Energinet, Energi Data Service, CC BY 4.0",
+    "weather": "Danish Meteorological Institute (DMI), CC BY 4.0"
+  },
+  "electricity_requests": [
+    {
+      "dataset": "Elspotprices",
+      "url": "https://api.energidataservice.dk/dataset/Elspotprices?start=2024-12-31&end=2025-10-02&filter=%7B%22PriceArea%22%3A+%5B%22DK2%22%5D%7D&limit=0&sort=HourUTC",
+      "records": 6575,
+      "requested_hour_count": 6550
+    },
+    {
+      "dataset": "DayAheadPrices",
+      "url": "https://api.energidataservice.dk/dataset/DayAheadPrices?start=2025-09-30&end=2026-01-03&filter=%7B%22PriceArea%22%3A+%5B%22DK2%22%5D%7D&limit=0&sort=TimeUTC",
+      "records": 9028,
+      "requested_hour_count": 2210
+    }
+  ],
+  "dmi_requests": [
+    {
+      "window_start": "2025-01-01",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2024-12-31T13:00:00Z/2025-01-08T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-01-08",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-01-08T01:00:00Z/2025-01-15T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-01-15",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-01-15T01:00:00Z/2025-01-22T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-01-22",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-01-22T01:00:00Z/2025-01-29T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-01-29",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-01-29T01:00:00Z/2025-02-05T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-02-05",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-02-05T01:00:00Z/2025-02-12T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-02-12",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-02-12T01:00:00Z/2025-02-19T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-02-19",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-02-19T01:00:00Z/2025-02-26T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-02-26",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-02-26T01:00:00Z/2025-03-05T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-03-05",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-03-05T01:00:00Z/2025-03-12T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-03-12",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-03-12T01:00:00Z/2025-03-19T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-03-19",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-03-19T01:00:00Z/2025-03-26T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-03-26",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-03-26T01:00:00Z/2025-04-02T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-04-02",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-04-02T01:00:00Z/2025-04-09T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-04-09",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-04-09T01:00:00Z/2025-04-16T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-04-16",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-04-16T01:00:00Z/2025-04-23T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-04-23",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-04-23T01:00:00Z/2025-04-30T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-04-30",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-04-30T01:00:00Z/2025-05-07T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-05-07",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-05-07T01:00:00Z/2025-05-14T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-05-14",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-05-14T01:00:00Z/2025-05-21T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-05-21",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-05-21T01:00:00Z/2025-05-28T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-05-28",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-05-28T01:00:00Z/2025-06-04T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-06-04",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-06-04T01:00:00Z/2025-06-11T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-06-11",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-06-11T01:00:00Z/2025-06-18T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-06-18",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-06-18T01:00:00Z/2025-06-25T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-06-25",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-06-25T01:00:00Z/2025-07-02T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-07-02",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-07-02T01:00:00Z/2025-07-09T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-07-09",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-07-09T01:00:00Z/2025-07-16T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-07-16",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-07-16T01:00:00Z/2025-07-23T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-07-23",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-07-23T01:00:00Z/2025-07-30T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-07-30",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-07-30T01:00:00Z/2025-08-06T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-08-06",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-08-06T01:00:00Z/2025-08-13T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-08-13",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-08-13T01:00:00Z/2025-08-20T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-08-20",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-08-20T01:00:00Z/2025-08-27T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-08-27",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-08-27T01:00:00Z/2025-09-03T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-09-03",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-09-03T01:00:00Z/2025-09-10T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-09-10",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-09-10T01:00:00Z/2025-09-17T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-09-17",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-09-17T01:00:00Z/2025-09-24T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-09-24",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-09-24T01:00:00Z/2025-10-01T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-10-01",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-10-01T01:00:00Z/2025-10-08T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-10-08",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-10-08T01:00:00Z/2025-10-15T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-10-15",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-10-15T01:00:00Z/2025-10-22T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-10-22",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-10-22T01:00:00Z/2025-10-29T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-10-29",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-10-29T01:00:00Z/2025-11-05T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-11-05",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-11-05T01:00:00Z/2025-11-12T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-11-12",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-11-12T01:00:00Z/2025-11-19T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-11-19",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-11-19T01:00:00Z/2025-11-26T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-11-26",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-11-26T01:00:00Z/2025-12-03T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-12-03",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-12-03T01:00:00Z/2025-12-10T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-12-10",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-12-10T01:00:00Z/2025-12-17T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-12-17",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-12-17T01:00:00Z/2025-12-24T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-12-24",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-12-24T01:00:00Z/2025-12-31T00:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    },
+    {
+      "window_start": "2025-12-31",
+      "query_url": "https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?stationId=06180&parameterId=temp_mean_past1h&datetime=2025-12-31T01:00:00Z/2026-01-01T12:00:00Z&limit=1000&offset=0",
+      "pages": 2
+    }
+  ],
+  "weather_qa": {
+    "raw_records": 8770,
+    "duplicate_identical_timestamp_records": 0,
+    "observed_hours": 8747,
+    "interpolated_hours": 13,
+    "interpolation_method": "linear in UTC with measured bracketing, gap <= 3 hours; no extrapolation",
+    "hourly_jump_threshold_c": 12.0,
+    "raw_metobs_quality_controlled": false
+  },
+  "observed_price_min_eur_mwh": -25.35,
+  "observed_price_max_eur_mwh": 583.400024,
+  "negative_price_hours": 265,
+  "weather_temperature_min_c": -9.0,
+  "weather_temperature_max_c": 28.5,
+  "sha256": {
+    "dk2_prices_2025.csv": "d18b6fac6a8dc950d304ecbb9d573aed0c60ed7fbeeb1919955d5374315a512f",
+    "dmi_temperature_2025.csv": "a9c4367d4cea09deabd81616ee579c06113ce0b3b9f5225844df443f51cbd38c"
+  },
+  "notes": [
+    "Actual observations are exogenous inputs only.",
+    "District heating demand, IT utilisation, capture and equipment economics remain assumptions.",
+    "Weather interpolation, when present, is flagged per hour in data CSV."
+  ]
+}

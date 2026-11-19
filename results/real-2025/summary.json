@@ -1,0 +1,47 @@
+{
+  "scenario": "2025 Copenhagen boundary conditions: observed DK2 prices and DMI weather",
+  "provenance": {
+    "price_data": "Energinet DK2 historical wholesale day-ahead prices",
+    "ambient_data": "DMI observed station air temperature (with explicit gap flags)",
+    "load_and_heat_demand": "hypothetical parametric models",
+    "weather_imputed_hours": 13
+  },
+  "illustrative_size_optimum": {
+    "rated_heat_mw": 0.85,
+    "npv_eur": 1417102.06,
+    "warning": "Grid search under hypothetical linear CAPEX; not an equipment recommendation"
+  },
+  "metrics": {
+    "hours": 8760,
+    "heat_demand_mwh": 6466.512,
+    "heat_delivered_mwh": 4860.611771097544,
+    "source_heat_used_mwh": 3777.8962129973274,
+    "compressor_electricity_mwh": 1233.0437572063265,
+    "pumping_electricity_mwh": 90.19691946366576,
+    "mean_running_cop": 4.063878464099931,
+    "heat_demand_coverage": 0.7516589733534159,
+    "capacity_factor_rated_heat_output": 0.4974131397859494,
+    "baseline_gas_heat_cost_avoided_eur": 351044.18346815597,
+    "electricity_cost_eur": 114568.24032134755,
+    "variable_om_eur": 24303.05885548772,
+    "fixed_om_eur": 23000.0,
+    "annual_incremental_cashflow_eur": 189172.8842913207,
+    "capital_expenditure_eur": 820000.0,
+    "simple_payback_years": 4.334659288364098,
+    "npv_eur": 1300896.2941342317,
+    "break_even_heat_value_eur_per_mwh": 48.888108654186595,
+    "conditional_operational_emissions_avoided_tonnes": 905.6836138903165,
+    "data_provenance": "electricity: Energinet observed; ambient: DMI observed with QC flags; district heat demand and technology parameters: assumed",
+    "counterfactual": "district heat supplied by natural gas boiler; no heat-recovery infrastructure",
+    "note": "Illustrative feasibility study, not a bankable feasibility assessment."
+  },
+  "limitations": [
+    "IT load, thermal demand coefficients, capture fraction and plant parameters are assumptions; weather and market prices are observed ONLY when supplied",
+    "The COP relation is a parametric approximation, not a measured heat-pump curve",
+    "PUE is background electricity only and is not counted as recovered heat",
+    "Counterfactual assumes marginal heat supplied by a gas boiler",
+    "Emissions are operational and conditional on assumed grid/boiler factors",
+    "No thermal storage, hydraulic network model, redundancy or heat-exchanger sizing",
+    "Real-capex, tax and tariff quotations are not available"
+  ]
+}
