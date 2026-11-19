@@ -2,9 +2,9 @@
 title: "Can Waste Heat from a Data Centre Supply District Heating?"
 subtitle: "A reproducible hourly thermodynamic and techno-economic screening study"
 author: "Guillaume Saint-Pierre — Mechanical Engineering, EPFL / DTU exchange"
-date: "17 November 2026"
+date: "19 November 2026"
 abstract: |
-  This study investigates whether low-grade waste heat from a hypothetical 1 MW IT data centre could supply useful heat to a district-heating network. A reduced-order model couples available heat, an electrically driven heat pump, network losses, seasonal demand and hourly economic dispatch. Annual fuel substitution is valued relative to a gas-boiler counterfactual, with net present value calculated from discounted cash flows. For clearly labelled synthetic reference inputs, 5.05 GWh of useful heat is delivered annually with an average operating COP of 4.01. Technical scenarios and an uncalibrated parameter sweep illustrate that heat exported and profitability depend on source limitations, network supply temperature and energy prices. All thermal profiles and project-cost assumptions are synthetic or hypothetical. The results demonstrate a screening method, not physical validation or financial feasibility for a particular installation.
+  This study assesses the technical and economic conditions under which waste heat from a hypothetical 1 MW IT data centre could serve district heating. A reproducible hourly model combines a temperature-dependent heat-pump approximation, source and demand constraints, network losses, conditional operational emissions and an avoided-gas-boiler cash-flow calculation. An entirely synthetic benchmark delivers 5.05 GWh/year at a running COP of 4.01. A separate 2025 historical-boundary study uses actual Energinet DK2 wholesale electricity prices and DMI Kastrup air-temperature observations (13 of 8,760 hourly weather values transparently interpolated). Under otherwise unchanged assumptions it delivers 4.86 GWh/year at COP 4.06, covering 75.2% of the *modelled* heat demand and producing a conditional 20-year NPV of EUR 1.30 million. Physical source temperatures, heating demand, equipment characteristics, commercial heat revenues and CAPEX remain unverified assumptions. This is an auditable screening study, not field validation or an investment recommendation.
 keywords:
   - heat recovery
   - data centres
@@ -14,7 +14,7 @@ keywords:
   - numerical modelling
 ---
 
-**STUDY STATUS — CONDITIONAL MODEL.** The case considered here is hypothetical. The load, ambient temperature, heating demand, temperatures, equipment efficiencies, prices, emission factors and installed costs in the reference dataset are assumptions. None are presented as measurements from an operating data centre or Danish district-heating utility. The full calculation is reproducible; physical validation remains an open task.
+**STUDY STATUS — CONDITIONAL MODEL, WITH A HISTORICAL INPUT STUDY.** The reference dataset is synthetic, while the separate 2025 study substitutes **observed DK2 electricity-market prices and DMI station temperatures** (including 13 documented short-gap interpolations). IT load, source temperature relationships, district heating demand, heat-pump efficiency, emissions factors and economic parameters remain hypothetical. No operating data-centre or district-heating utility was studied. The code is numerically verified; physical and financial validation remain open.
 
 # 1. Motivation and precise research question
 
@@ -152,9 +152,9 @@ Otherwise, the heat pump stays off and the reference boiler supplies that hour's
 
 The baseline covers the **8,760 UTC hours of 2025**. IT load follows an hourly and weekly variation around a stated mean. Ambient temperature is a synthetic annual sinusoid with daily oscillation and reproducible random perturbations. District demand increases below a heating-balance temperature and retains a small hot-water base load. Supply temperature follows a synthetic weather-compensated reset. Electricity prices include daily/seasonal variations and fixed-seed perturbations.
 
-**No observed Copenhagen heat-demand, weather, IT load or energy-price series is embedded in the reference simulation.** The design is reproducible offline and has deliberately labelled input assumptions. This avoids the common mistake of attaching precise plots to undocumented or invented measurements.
+**No observed Copenhagen heat-demand, weather, IT load or energy-price series is embedded in the synthetic reference simulation.** It remains reproducible offline with explicitly labelled assumptions. A distinct 2025 study replaces only the ambient-temperature and day-ahead-price boundary conditions with actual observations, as documented in Section 11.
 
-Energinet publishes Danish market prices via Energi Data Service [5]. The repository includes an **optional**, separate importer for the `DayAheadPrices` dataset, covering the 15-minute market resolution. Its data-processing logic uses UTC and averages four quarter-hour observations into one hourly market price. The import rejects incomplete or duplicated timestamps rather than silently interpolating. The bundled run does **not** use this downloaded dataset, and no successful historical data download is claimed.
+Energinet publishes Danish wholesale prices through Energi Data Service [5]. The completed 2025 import joins the legacy hourly `Elspotprices` data to the quarter-hourly `DayAheadPrices` series, which starts on 1 October 2025 **local Danish time** (30 September at 22:00 UTC). Each complete group of four quarter-hours is averaged into one UTC hour. The importer rejects missing electricity intervals and duplicates. DMI Kastrup temperatures from station 06180, parameter `temp_mean_past1h`, are shifted to the start of the preceding one-hour interval [6]. Details and provenance hashes are provided in `docs/OBSERVED_DATA_2025.md`.
 
 ![Representative synthetic winter week. Thermal source availability, customer demand and delivered energy must be compared at the same hour.](../figures/02_winter_week.png){ width=94% }
 
@@ -259,11 +259,11 @@ For this counterfactual, approximately **938 tonnes of operational CO2 per year*
 
 # 10. Verification, hand checks and validation gaps
 
-## 9.1 Code verification
+## 10.1 Code verification
 
-The project has **38 passing automated tests** addressing Carnot limits, source capacity, rating constraints, zero heat demand, zero IT input, price-driven shutdown, negative power prices, first-law conservation, time-series reproducibility, strict CSV coverage, conversion from 15-minute to hourly market prices, and present-value arithmetic. The simulator also checks energy conservation and all power bounds at **every operating hour**. Tests are run automatically on GitHub through the supplied CI workflow once the repository is published.
+The project has **56 passing automated tests** (as run on 19 November 2026) addressing Carnot limits, source capacity, rating constraints, zero heat demand, zero IT input, price-driven shutdown, negative power prices, first-law conservation, time-series reproducibility, strict CSV coverage, conversion from 15-minute to hourly market prices, and present-value arithmetic. The simulator also checks energy conservation and all power bounds at **every operating hour**. Tests are run automatically on GitHub through the supplied CI workflow once the repository is published.
 
-## 9.2 Independent single-hour analytical calculation
+## 10.2 Independent single-hour analytical calculation
 
 Consider $T_{source}=30\,^{\circ}\mathrm C$, $T_{DH}=65\,^{\circ}\mathrm C$, $\Delta T_e=4$ K, $\Delta T_c=3$ K, and $\eta_{II}=0.5$. Then $T_e=299.15$ K and $T_c=341.15$ K, giving
 
@@ -282,7 +282,7 @@ $$
 
 The balance $0.600+0.196\simeq0.796$ MW follows directly. This is a useful hand check because it does not depend on plots or annual aggregation.
 
-## 9.3 Why physical validation is still missing
+## 10.3 Why physical validation is still missing
 
 Successful numerical tests show that the source code follows the stated simplified equations; they do **not** prove that the assumptions accurately describe a real energy plant. The following would be required for external validation:
 
@@ -294,11 +294,60 @@ Successful numerical tests show that the source code follows the stated simplifi
 
 The study excludes thermal storage, ramping/start-stop costs, grid ancillary-service revenue, dynamic interaction with original data-centre cooling demand, refrigerant leakage, lifecycle impacts and contract-specific risk. Those omissions should be resolved before any real investment recommendation.
 
-# 11. Conclusion and next steps
+# 11. Historical boundary conditions: Denmark, 2025
 
-Under the assumed conditions, the simulated system delivers **about 5.05 GWh/year** of useful heat and covers **around 69%** of a hypothetical district network's annual demand. A temperature-dependent heat-pump model, explicit source and demand bounds and a gas boiler counterfactual turn an intuitive heat-recovery idea into an auditable screening calculation. Equally important, price and technical sensitivities show why one favorable baseline should not be mistaken for robust feasibility.
+## 11.1 Observational dataset and quality checks
 
-The most important engineering lesson is that **physical energy conservation, timing, temperature level and the price of additional electricity must be assessed together**. I would prioritize replacing the demand and source-temperature curves with observed measurements, and then recalibrate COP against an actual heat-pump specification before extending the model to storage or network optimization.
+The historical experiment changes **two inputs only**: wholesale spot electricity prices in bidding zone DK2 and ambient air temperature at the DMI Kastrup station (station 06180). All 8,760 UTC hours of 2025 have market-price observations. The mean wholesale price across those hours is **EUR 82.50/MWh**, including **265 negative-price hours**; the range is **-25.35 to 583.40 EUR/MWh**. These are wholesale prices, **not the full tariff** faced by a heat-pump operator: network charges, taxes, contractual arrangements and risk premiums are excluded. After the October market transition, the model aggregates four observed quarter-hour prices into each hour without imputing missing market data.
+
+The DMI weather input also covers 8,760 hourly timestamps: **8,747 directly observed values and 13 marked linear interpolations** (0.15% of the year). Short missing intervals are filled only between real observations and under an enforced maximum gap of three hours; nearby observations from outside the year may bracket a boundary gap. The average temperature is **10.25 °C**, with a minimum of **-9.0 °C** and maximum of **28.5 °C**. DMI's `metObs` source provides raw station observations, not a formally quality-controlled climate dataset. The station is at Copenhagen Airport, not an identified heating-network location. UTC is used throughout to avoid daylight-saving ambiguities [5,6].
+
+![](../figures/09_observed_2025_monthly_inputs.png){ width=74% }
+
+*Figure 9. Observed monthly DMI temperature and Energinet DK2 spot prices, 2025.*
+
+## 11.2 Annual outcomes and comparison
+
+The two simulations share the same assumed IT-load profile, heat-capture fraction, heat-pump COP approximation, network-demand coefficients, project costs, gas-boiler counterfactual and emissions factors. **The original reference uses synthetic weather and prices; the historical case uses observed weather and prices, but the physical load and financial model are still hypothetical.** The observed-temperature series is passed through the same uncalibrated degree-day demand relation, so district heat demand remains *model-generated* even in the historical case.
+
+| Annual indicator | Synthetic reference | Historical 2025 input case |
+|:---|---:|---:|
+| Modelled district-heating demand | 7,301.5 MWh | **6,466.5 MWh** |
+| Useful heat delivered | 5,047.7 MWh | **4,860.6 MWh** |
+| Heat-demand coverage | 69.1% | **75.2%** |
+| Operating heat-pump COP | 4.005 | **4.064** |
+| Source heat extracted | 3,904.6 MWh | **3,777.9 MWh** |
+| Compressor purchased electricity | 1,299.2 MWh | **1,233.0 MWh** |
+| Circulation purchased electricity | 93.7 MWh | **90.2 MWh** |
+| Annual electricity expenditure | EUR 125,571 | **EUR 114,568** |
+| Annual net system savings* | EUR 190,748 | **EUR 189,173** |
+| Conditional 20-year NPV* | EUR +1,318,960 | **EUR +1,300,896** |
+| Break-even heat value* | EUR 49.44/MWh | **EUR 48.89/MWh** |
+| Conditional operational CO2 difference* | 938 tonnes/year | **906 tonnes/year** |
+
+*Each starred indicator depends on assumed avoided gas costs, project capital and operating costs, discount rates and/or emissions factors, not on real investor invoices or measured marginal emissions.*
+
+![](../figures/10_historical_vs_reference.png){ width=84% }
+
+*Figure 10. Model sensitivity: historical inputs compared with the synthetic reference.*
+
+Under the 2025 boundary conditions, simulated delivered heat is approximately **3.7% lower** even though demand coverage increases by about **6.0 percentage points**. The explanation is the **larger reduction in modelled heat demand** (approximately 11.4%). The small COP increase (~1.5%) and lower annual compressor expenditure reflect a different balance of hourly temperature lift, coincident heat demand and market prices; they cannot be attributed to a single independent factor without a controlled weather-only / price-only decomposition.
+
+The conditional NPV changes relatively little, falling by about **EUR 18,064 (1.4%)** from EUR 1.319 million to EUR 1.301 million. A smaller amount of gas-boiler heat is displaced, but electricity purchases are lower. The 2025 sizing screen reports its best candidate near **0.85 MW** (rather than 0.90 MW in the synthetic benchmark), *only within the tested discrete capacities and the invented linear CAPEX relation*. This is not a vendor or financing recommendation.
+
+## 11.3 Interpretation, financing boundary and limitations
+
+Two genuine improvements result from the historical integration: the model is exposed to **real price volatility and negative-price periods**, and the degree-day demand model is driven by **observed seasonal and hourly outdoor temperatures**. This improves boundary-condition credibility but **does not validate the model against a real plant**. The annual modelled heat delivery is not an observation; no measured heat-pump source temperatures, district customer demand, COP map, pipe heat losses, heat-sale contract or installed CAPEX was provided.
+
+The most important financial distinction is ownership and payment boundary. In the current avoided-boiler comparison, the value assigned to recovered heat is the cost of a hypothetical gas boiler displaced at the district-system level. This may **not** be the revenue received by the waste-heat project owner. A financeable project would require a specified offtake agreement and its tariff, grid/connection and electricity contracts, equipment quotations, financing structure, taxes, scheduled replacements and downside risks. The positive NPV here should therefore be read as a **conditional system-cost screening result**, not proof of commercial bankability or a loan-serviceable investor return.
+
+Finally, meteorological interpolation flags represent a modest data-quality issue, while the **uncalibrated demand model, constant second-law COP factor, assumed gas reference and unquoted costs** are substantially larger sources of model-form uncertainty. Improvements should prioritize measured heat demand and source-loop temperatures, manufacturer COP points, network connection feasibility and contractual economics before adding more simulation detail.
+
+# 12. Conclusion and next steps
+
+This study finds that a hypothetical 1 MW IT data centre can supply a meaningful share of modelled district-heating demand **under explicitly specified assumptions**: 5.05 GWh/year in a synthetic benchmark and 4.86 GWh/year when 2025 historical Danish electricity prices and station temperatures are used. The latter run covers 75.2% of the assumed demand profile, has an operating COP of 4.064 and returns a EUR 1.30 million 20-year NPV **within the gas-boiler cost-avoidance model**. None of these values represents measured delivery from an actual data centre or an investor-grade forecast.
+
+The central engineering finding is that **source availability, temperature lift, hourly heat demand and purchased-electricity costs must be considered together**. Historical boundary conditions provide a more credible stress test but not independent field validation. Before advocating investment, the next decisive evidence would be measured source-loop temperatures and district load, independently verified equipment COP curves, connection quotations and a heat-offtake agreement. The project demonstrates a reproducible way to identify those decision-critical uncertainties rather than assuming heat recovery is automatically beneficial.
 
 # References
 
@@ -310,7 +359,9 @@ The most important engineering lesson is that **physical energy conservation, ti
 
 [4] IEA District Heating and Cooling, *Low-Temperature District Heating Implementation Guidebook*, Annex TS2, 2021. <https://www.iea-dhc.org/fileadmin/documents/Annex_TS2/IEA_DHC_Annex_TS2_Transition_to_low_temperature_DH.pdf>
 
-[5] Energinet, *Energi Data Service API Guide*, accessed November 2026. <https://www.energidataservice.dk/guides/api-guides>
+[5] Energinet, *Energi Data Service API Guide; Elspotprices and DayAheadPrices*, accessed November 2026. <https://www.energidataservice.dk/guides/api-guides>
+
+[6] Danish Meteorological Institute (DMI), *Open Data — Meteorological Observation API*, accessed November 2026. <https://www.dmi.dk/friedata/dokumentation/meteorological-observation-api>
 
 # Appendix. Replication
 
@@ -324,4 +375,4 @@ python run.py
 PYTHONPATH=src pytest -q
 ```
 
-Each numerical result in the manuscript can be recomputed from `config.json` and the code. `results/hourly_results.csv` is the energy and cash-flow ledger; `results/scenario_comparison.csv`, `results/assumption_sweep.csv` and `results/capacity_sizing.csv` contain the experimental comparisons and design screening. Figures are generated automatically. The detailed timestamp rules, parameter provenance and verification checks are in `docs/DATA.md`, `docs/SOURCES.md` and `docs/VALIDATION.md`.
+Reference results are reproduced by `python run.py --config config.json --out results`. For the historical case, the published files `data/observed/dk2_prices_2025.csv` and `data/observed/dmi_temperature_2025.csv` and their SHA-256 metadata were retrieved from the two official providers. Run `python run.py --config config.real-2025.json --out results/real-2025`, followed by `python scripts/plot_observed_inputs.py --year 2025`, `python scripts/compare_runs.py` and `python scripts/build_final_report_figures.py` to regenerate all historical outputs and the final report comparison figures. `results/real-2025/summary.json` contains exact metrics; `results/real-2025/hourly_results.csv` contains hourly values. Source, timestamps, data-quality flags and validation limits are documented in `docs/OBSERVED_DATA_2025.md`, `docs/DATA.md` and `docs/VALIDATION.md`.
